@@ -1,26 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P2E project</title>
     <link rel="stylesheet" href="css/css-backbone.css">
+    <style>
+        /* Additional styles for enhanced features */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .typing-text {
+            border-right: 2px solid #3498db;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { border-right-color: #3498db; }
+            51%, 100% { border-right-color: transparent; }
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+        
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .section-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        .stats-counter {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin: 0.5rem 0;
+        }
+        
+        .floating-nav {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .floating-nav a {
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #bdc3c7;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .floating-nav a.active,
+        .floating-nav a:hover {
+            background: #3498db;
+            transform: scale(1.5);
+        }
+        
+        .floating-nav a::after {
+            content: attr(data-section);
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .floating-nav a:hover::after {
+            opacity: 1;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+        }
+        
+        .parallax-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        @media (max-width: 768px) {
+            .floating-nav,
+            .back-to-top {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-    <p id="note">This is the website for my P2E project for this year. Last year I used Google Sites to do this whole thing. This year, after recording and doing all of the other work, I decided to make this website.</p> 
-    <h1 id =title>The World in 5 Minutes</h1>
-        <div>
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <!-- Parallax background -->
+    <div class="parallax-bg"></div>
+    
+    <!-- Floating navigation -->
+    <nav class="floating-nav" id="floatingNav">
+        <a href="#intro" data-section="Intro"></a>
+        <a href="#about" data-section="About"></a>
+        <a href="#posterboard" data-section="Posterboard"></a>
+        <a href="#resources" data-section="Resources"></a>
+    </nav>
+    
+    <!-- Back to top button -->
+    <div class="back-to-top" id="backToTop">↑</div>
+    
+    <div class="container">
+        <section id="intro" class="fade-in">
+            <p id="note">This is the website for my P2E project for this year. Last year I used Google Sites to do this whole thing. This year, after recording and doing all of the other work, I decided to make this website. Also, Claude.ai helped me make this page look WAY better, so check it out.</p> 
+            <h1 id="title" class="typing-text">The World in 5 Minutes</h1>
+        </section>
+        
+        <div class="section-card fade-in" id="about">
             <h3>About the Podcast</h3>
-                <p>This is the podcast that I created this year for my P2E project. I am very interested in the news, so I just decided to create a podcast that would cover the news for that week. Originally, the plan was to record several episodes, maybe up until May or so, but after dealing with the tough process of recording, editing, and finding all of the right tools, I decided to only record 1 episode, which was from late March as you can tell from the recording. I used the easiest editing tool, CapCut, to edit my podcast. However, after losing the CapCut file, I encountered some technical difficulties and that is why the audio is rather hard to hear in the second section. I also used Fish Audio (sadly now not free) to create the Joe Biden and Donald Trump advertisement for my podcast. I also used one other AI tool to generate the two other AI voices heard in my podcast.</p>
-                <p>The whole process was quite interesting. We first had to get our project approved by Mrs. Lesiak. When I ran my podcast idea by her, she thought that it was a very interesting idea. She pointed out that there was a lot of topics in the news which I might have wanted to cover. Once we had our research, our next job was to create the podcast scripts. This was somewhat difficult, because I'm not very good at writing anything. However, I managed to write the script, and I think it came out fairly well.  As I said, the plan was originally to record multiple episodes, but that proved to be impossible because of the time it took to find the correct tools and edit everything. Mrs. Lesiak also had professional podcasting equipment that we could have used to record our podcasts, but I also decided against that because it was simply easier to edit and record the podcast at home. We also had to create an advertisement, which I used the ElonTalks website to do by creating a video of Trump, Biden, and Obama endorsing my podcast, respectively. Finally, we had to create the posterboard, which you may or may not have been able to go to my station and see.</p>
+            <div class="stats-counter" data-target="1">0</div>
+            <p style="margin-top: -10px; color: #7f8c8d;">Episode Created</p>
+            
+            <p>This is the podcast that I created this year for my P2E project. I am very interested in the news, so I just decided to create a podcast that would cover the news for that week. Originally, the plan was to record several episodes, maybe up until May or so, but after dealing with the tough process of recording, editing, and finding all of the right tools, I decided to only record 1 episode, which was from late March as you can tell from the recording. I used the easiest editing tool, CapCut, to edit my podcast. However, after losing the CapCut file, I encountered some technical difficulties and that is why the audio is rather hard to hear in the second section. I also used Fish Audio (sadly now not free) to create the Joe Biden and Donald Trump advertisement for my podcast. I also used one other AI tool to generate the two other AI voices heard in my podcast.</p>
+            
+            <p>The whole process was quite interesting. We first had to get our project approved by Mrs. Lesiak. When I ran my podcast idea by her, she thought that it was a very interesting idea. She pointed out that there was a lot of topics in the news which I might have wanted to cover. Once we had our research, our next job was to create the podcast scripts. This was somewhat difficult, because I'm not very good at writing anything. However, I managed to write the script, and I think it came out fairly well. As I said, the plan was originally to record multiple episodes, but that proved to be impossible because of the time it took to find the correct tools and edit everything. Mrs. Lesiak also had professional podcasting equipment that we could have used to record our podcasts, but I also decided against that because it was simply easier to edit and record the podcast at home. We also had to create an advertisement, which I used the ElonTalks website to do by creating a video of Trump, Biden, and Obama endorsing my podcast, respectively. Finally, we had to create the posterboard, which you may or may not have been able to go to my station and see.</p>
         </div>
-        <div>
+        
+        <div class="section-card fade-in" id="posterboard">
             <h3>Posterboard and coverage on the media</h3>
             <p>For my posterboard, I really had no idea what to do. My project was just some random podcast about the news, so why would people want to just see news events? So on my posterboard, I focused on the media and its history. I also focused on media bias and the highly negative impact that it has on our society today. I also decided to summarize the top five news events from last year, because I thought that that was highly important as well given that this is a news podcast.</p>
         </div>
-        <div>
+        
+        <div class="section-card fade-in" id="resources">
             <h3>Resources</h3>
             <p>Check out the resources page below, where you can find all of my links and stuff for my project.</p>
+            <a href="Resources/resources.html" class="btn">Explore Resources</a>
         </div>
-        <a href="Resources/resources.html" class="btn">Resources</a>
+    </div>
+
+    <script>
+        // Typing effect for title
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            element.innerHTML = '';
+            element.classList.add('typing-text');
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    setTimeout(() => {
+                        element.classList.remove('typing-text');
+                    }, 1000);
+                }
+            }
+            type();
+        }
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Counter animation
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            
+            function updateCounter() {
+                start += increment;
+                if (start < target) {
+                    element.textContent = Math.floor(start);
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = target;
+                }
+            }
+            updateCounter();
+        }
+
+        // Progress bar
+        function updateProgressBar() {
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Floating navigation
+        function updateFloatingNav() {
+            const sections = ['intro', 'about', 'posterboard', 'resources'];
+            const navLinks = document.querySelectorAll('.floating-nav a');
+            
+            sections.forEach((sectionId, index) => {
+                const section = document.getElementById(sectionId);
+                const rect = section.getBoundingClientRect();
+                
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    navLinks[index].classList.add('active');
+                } else {
+                    navLinks[index].classList.remove('active');
+                }
+            });
+        }
+
+        // Back to top button
+        function toggleBackToTop() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        // Smooth scroll function
+        function smoothScroll(target) {
+            const element = document.querySelector(target);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start typing animation for title
+            const title = document.getElementById('title');
+            setTimeout(() => {
+                typeWriter(title, 'The World in 5 Minutes', 150);
+            }, 500);
+
+            // Observe fade-in elements
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Animate counter when visible
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = parseInt(entry.target.getAttribute('data-target'));
+                        animateCounter(entry.target, target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.stats-counter').forEach(counter => {
+                counterObserver.observe(counter);
+            });
+
+            // Add event listeners for floating nav
+            document.querySelectorAll('.floating-nav a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    smoothScroll(link.getAttribute('href'));
+                });
+            });
+
+            // Back to top functionality
+            document.getElementById('backToTop').addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Scroll event listeners
+        window.addEventListener('scroll', () => {
+            updateProgressBar();
+            updateFloatingNav();
+            toggleBackToTop();
+        });
+
+        // Add hover effects to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.section-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // Add some particle effects (optional)
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.cssText = `
+                position: fixed;
+                width: 4px;
+                height: 4px;
+                background: rgba(52, 152, 219, 0.6);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: -1;
+                left: ${Math.random() * 100}%;
+                top: 100%;
+                animation: float 6s linear forwards;
+            `;
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 6000);
+        }
+
+        // Add CSS for particle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                to {
+                    transform: translateY(-100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Create particles occasionally
+        setInterval(createParticle, 2000);
+    </script>
 </body>
 </html>
